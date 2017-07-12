@@ -71,8 +71,8 @@ public class LSF extends BatchSystem {
         }
         // submits the job to LSF
         Shell shell = new Shell("#!/bin/bash +x\n" + emailConfiguration
-                + "bsub -q " + queueType + " -e \"errorLog\" "
-                + jobFileName + " | tee " + COMMUNICATION_FILE);
+                + "bsub -q " + queueType + " -e \"errorLog\" " + "-o STDOUT.%J "
+                +"./"+ jobFileName + " | tee " + COMMUNICATION_FILE);
         shell.perform(build, launcher, listener);
 
         // stores the job id
@@ -185,17 +185,17 @@ public class LSF extends BatchSystem {
     public void createFinishedJobOutputFile(String jobId, int offset)
             throws InterruptedException {
         // because of the running job output headers
-        if (offset >= 3) {
-            offset = offset - 3;
-        }
-        Shell shell = new Shell("#!/bin/bash +x\n tail -n+" + offset
-                + " LSFJOB_" + jobId + "/STDOUT" + " > " + COMMUNICATION_FILE);
+//        if (offset >= 3) {
+//            offset = offset - 3;
+//        }
+        Shell shell = new Shell("#!/bin/bash +x\n cat "
+                + "STDOUT."+ jobId + " > " + COMMUNICATION_FILE);
         shell.perform(build, launcher, listener);
     }
     
     @Override
     public void cleanUpFiles(String jobId) throws InterruptedException {
-        Shell shell = new Shell("rm -rf LSFJOB_" + jobId + " errorLog");
+        Shell shell = new Shell("rm -rf STDOUT." + jobId + " errorLog");
         shell.perform(build, launcher, fakeListener);
     }
 
